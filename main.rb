@@ -1,7 +1,8 @@
+# main.rb
 require_relative 'maquina-turing-universal'
-require_relative 'mt-codificada'
+require_relative 'mt-linguagem-sensivel-ao-contexto' # <-- Mude para o nome do arquivo novo!
 
-entrada = linker + "$" + codificacao_cadeia
+entrada = linker + "#" + codificacao_cadeia
 mt = MTU.new
 
 puts "Entrada:\n #{entrada}"
@@ -9,4 +10,5 @@ puts "Decidiu? #{mt.processar(entrada)}"
 puts "Fita Resultante:\n #{mt.fita}"
 puts "Cursor parou em #{mt.cursor}"
 puts "Cursor no estado #{mt.estado}"
-puts "Cursor está lendo \"#{mt.fita[mt.cursor]}\""
+caractere_atual = mt.fita[mt.cursor]
+puts "Cursor está lendo \"#{caractere_atual.nil? ? '_' : caractere_atual}\""

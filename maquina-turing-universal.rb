@@ -1,182 +1,139 @@
+# maquina-turing-universal.rb
+
 class MTU
-  attr_accessor :fita, :estado, :cursor, :estado_leitura, :simbolo_leitura, :estado_destino, :simbolo_escrita, :movimento, :transicoes
+  attr_accessor :fita, :cursor
+  attr_reader :estado
 
   def initialize
-    @estado = :q1
     @cursor = 0
-    @estado = :qi
-    @cursor = 0
-    @movimento_salvo = :D
+    @estado = "fa"
   end
 
   def processar(entrada)
-    @fita = "#" + entrada + " " * entrada.size * 3 # fita semi-infinita, virtual
-    estado_leitura = ""
-    simbolo_leitura = ""
-    estado_destino = ""
-    simbolo_escrita = ""
-    movimento = :D
-    transicoes = {}
-    @fita_cadeia = []
+    @fita = entrada.chars
+    @estado = "fa"
+    @posicao_palavra = @fita.join.index('#') + 1
 
-    while true      
-      case [@estado, @fita[@cursor]]
+    loop do
+      @cursor = @posicao_palavra
 
-      # iniciar máquina em qi e ir para primeiro estado
-      in [:qi, "#"]
-        operar("#", :q0, :D)
-      # começa a ler a fita e salva em uma estrutura de memória.
-      # neste caso, vamos salvar em uma estrutura do Ruby
-      in [:q0, "a"] # par: estado não-terminal        
-        estado_leitura << "a"
-        operar("a", :q1, :D)
-      in [:q1, "a"] # ímpar: estado terminal
-        estado_leitura << "a"
-        operar("a", :q0, :D)
+      simbolo_atual = ler_simbolo_w
       
-      ## Leitura de símbolo de leitura
-      in [:q0, "b"] | [:q1, "b"] | [:q2, "b"] # leitura de símbolos
-        simbolo_leitura << "b"
-        operar("b", :q2, :D)
-      in [:q2, "a"] # acabou leitura de símbolos
-        simbolo_leitura << "a"
-        operar("a", :q4, :D)
-      
-      # leitura de estado de destino
-      in [:q4, "a"] # leitura de estado de destino - par
-        estado_destino << "a"
-        operar("a", :q5, :D)
-      in [:q5, "a"] # leitura de estado de destino - ímpar
-        estado_destino << "a"
-        operar("a", :q4, :D)
-      
-      # leitura de símbolo de escrita
-      in [:q4, "b"] | [:q5, "b"] | [:q6, "b"] # leitura de símbolos
-        simbolo_escrita << "b"
-        operar("b", :q6, :D)
-      in [:q6, "a"] # acabou leitura de símbolos
-        simbolo_escrita << "a"
-        operar("a", :q7, :D)
+      transicao_encontrada = buscar_transicao(@estado, simbolo_atual)
 
-      # Leitura de movimento
-      in [:q7, "c"] # esquerda
-        movimento = :E
-        operar("c", :q8, :D)
-      in [:q8, "c"] # direita
-        movimento = :D
-        operar("c", :q8, :D)
-
-      # reinicia a máquina
-      in [:q8, "a"] 
-        # direta, salva transição
-        leitura = [estado_leitura, simbolo_leitura]
-        transicoes[leitura] = [simbolo_escrita, estado_destino, movimento]
-        puts("Transição lida: (#{estado_leitura},#{simbolo_leitura})->(#{simbolo_escrita},#{estado_destino},#{movimento})")
-        
-        estado_leitura = "a"
-        simbolo_leitura = ""
-        estado_destino = ""
-        simbolo_escrita = ""
-
-        operar("a", :q1, :D)
-
-      ######### leitura dos símbolos de w ##########   
-      # começa a leitura dos símbolos e processamento de w
-      in [:q8, "$"]
-        # adiciona o último estado
-        leitura = [estado_leitura, simbolo_leitura]
-        transicoes[leitura] = [simbolo_escrita, estado_destino, movimento]
-        puts("Transição lida: (#{estado_leitura},#{simbolo_leitura})->(#{simbolo_escrita},#{estado_destino},#{movimento})")
-        puts("============================\n\n")
-        puts("Enter para continuar...")
-        puts("============================\n\n")
-        gets
-        puts("=========== Leitura dos símbolos: ===========")
-        operar("$", :q20, :D)
-        simbolo_leitura = ""
-      in [:q20, 'b']
-        simbolo_leitura << "b"
-        operar("b", :q20, :D)
-      in [:q20, 'a']
-        simbolo_leitura << "a"
-        operar("a", :q21, :D)
-      
-      in [:q21, 'b'] # recomeça a leitura
-        @fita_cadeia << simbolo_leitura
-
-        # reinicia a leitura dos símbolos
-        simbolo_leitura = "b"
-        operar("b", :q20, :D)
-        
-      in [:q21, ' '] # finaliza leitura
-        @fita_cadeia << simbolo_leitura
-        
-        puts("=========== Fita de símbolos: ===========\n")
-        print(@fita_cadeia)
-        
-        ######## iniciando a leitura de w
-        return submaquina(transicoes)
-      else
-        puts "(#{estado_leitura},#{simbolo_leitura}) = (#{estado_destino},#{simbolo_escrita},#{movimento})"
-        return false
+      if transicao_encontrada.nil?
+        return @estado.start_with?("fb")
       end
-    end
-  end
 
-  def submaquina(transicoes)
-    # estado inicial da máquina a ser simulada
-    estado_mt = "aa"
-    @cursor_leitura = 0
+      novo_estado, novo_simbolo, direcao = transicao_encontrada
 
-    while true
-      simbolo_leitura = @fita_cadeia[@cursor_leitura]
+      escrever_simbolo_w(novo_simbolo)
+      @estado = novo_estado 
 
-      leitura = [estado_mt, simbolo_leitura]
-      puts "(#{estado_mt}, #{simbolo_leitura})"
-      resultado = transicoes[leitura]
-      simbolo_escrita = resultado[0]
-      estado_destino = resultado[1]
-      movimento = resultado[2]
-      puts "-> (#{estado_destino},#{simbolo_escrita},#{movimento})"
-
-      estado_mt = estado_destino
-      @fita_cadeia[@cursor_leitura] = simbolo_escrita
-
-      if (simbolo_leitura == "ba")
-        puts "\n=========================================="
-        puts "Finalizando a leitura na máquina principal"
-        puts "Estado final da máquina: #{estado_mt}"
-        puts "==========================================\n\n"
-        if (estado_mt.size % 2 == 1) # impar, aceitação
-          return true
-        else
-          return false
+      if direcao == "d"
+        @posicao_palavra += novo_simbolo.length
+      else
+        @posicao_palavra -= 1
+        string_fita = @fita.join
+        while @posicao_palavra > string_fita.index('#') && !string_fita[@posicao_palavra..].start_with?("sc", "_", " ")
+          @posicao_palavra -= 1
         end
       end
-
-      if movimento == :D
-        @cursor_leitura += 1
-      else
-        @cursor_leitura -= 1
-      end
-    end
-  end
-
-  def operar(escrever, estado, movimento = :D)
-    @fita[@cursor] = escrever
-    @estado = estado
-    if movimento == :D
-      @cursor += 1
-    else
-      @cursor -= 1
     end
   end
 
   def fita
-    @fita_cadeia
+    @fita.join
   end
 
-  def cursor
-    @cursor
+  private
+
+  def ler_simbolo_w
+    return "_" if @posicao_palavra >= @fita.length || @fita[@posicao_palavra] == "_" || @fita[@posicao_palavra] == " "
+    
+    string_fita = @fita.join[@posicao_palavra..]
+    if string_fita.start_with?("scccccc")
+      return "scccccc"
+    elsif string_fita.start_with?("sccccc")
+      return "sccccc"
+    elsif string_fita.start_with?("scccc")
+      return "scccc"
+    elsif string_fita.start_with?("sccc")
+      return "sccc"
+    elsif string_fita.start_with?("scc")
+      return "scc"
+    elsif string_fita.start_with?("sc")
+      return "sc"
+    end
+    "_"
+  end
+
+  def escrever_simbolo_w(novo_simbolo)
+    tamanho_atual = ler_simbolo_w.length
+    
+    if novo_simbolo.length < tamanho_atual
+      novo_simbolo = novo_simbolo.ljust(tamanho_atual, " ")
+    end
+
+    @fita.slice!(@posicao_palavra, tamanho_atual)
+    novo_simbolo.chars.reverse_each do |char|
+      @fita.insert(@posicao_palavra, char)
+    end
+  end
+
+  # NOVO: Lê a fita de regras pulando de bloco em bloco para não se confundir
+  def buscar_transicao(estado, simbolo)
+    conteudo_fita = @fita.join
+    fim_regras = conteudo_fita.index('#')
+    return nil if fim_regras.nil?
+    
+    regras = conteudo_fita[0...fim_regras]
+    ponteiro = 0
+
+    while ponteiro < regras.length
+      estado_origem = identificar_estado(regras[ponteiro..])
+      ponteiro += estado_origem.length
+
+      simbolo_origem = identificar_simbolo(regras[ponteiro..])
+      ponteiro += simbolo_origem.length
+
+      estado_destino = identificar_estado(regras[ponteiro..])
+      ponteiro += estado_destino.length
+
+      simbolo_destino = identificar_simbolo(regras[ponteiro..])
+      ponteiro += simbolo_destino.length
+
+      direcao = regras[ponteiro]
+      ponteiro += 1
+
+      if estado_origem == estado && simbolo_origem == simbolo
+        return [estado_destino, simbolo_destino, direcao]
+      end
+    end
+
+    return nil
+  end
+
+  def identificar_estado(str)
+    return "faaaaa" if str.start_with?("faaaaa")
+    return "faaaa" if str.start_with?("faaaa")
+    return "faaa"  if str.start_with?("faaa")
+    return "faa"   if str.start_with?("faa")
+    return "fa"    if str.start_with?("fa")
+    return "fbbb"  if str.start_with?("fbbb")
+    return "fbb"   if str.start_with?("fbb")
+    return "fb"    if str.start_with?("fb")
+    ""
+  end
+
+  def identificar_simbolo(str)
+    return "scccccc"if str.start_with?("scccccc")
+    return "sccccc"if str.start_with?("sccccc")
+    return "scccc" if str.start_with?("scccc")
+    return "sccc"  if str.start_with?("sccc")
+    return "scc"   if str.start_with?("scc")
+    return "sc"    if str.start_with?("sc")
+    return "_"     if str.start_with?("_") || str.start_with?(" ")
+    ""
   end
 end
