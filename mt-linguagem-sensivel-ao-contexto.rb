@@ -1,5 +1,3 @@
-# mt-sensivel-contexto.rb
-
 # Estados de busca
 @q0 = "fa"      # Procura 'a' limpo para marcar
 @q1 = "faa"     # Procura 'b' limpo para marcar
@@ -74,6 +72,6 @@ def codificacao_cadeia
   # "cba"    -> @sc_char + @sb + @sa                   | Esperado: false (Ordem invertida)
   # =================================================================
   
-  # Cadeia ativa para a avaliação do professor (aabbcc)
-  (@sa * 2) + (@sb * 2) + (@sc_char * 2)
+  # Cadeia ativa para a avaliação (aabbcc)
+  (@sa * 2) + (@sb * 2) + (@sc_char * 2) 
 end

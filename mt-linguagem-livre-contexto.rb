@@ -1,5 +1,3 @@
-# mt-livre-contexto.rb
-
 # Estados de não-aceitação
 @q0 = "fa"    # Estado inicial: procurando 'a' para marcar
 @q1 = "faa"   # Indo para a direita procurando 'b' correspondente
@@ -64,6 +62,6 @@ def codificacao_cadeia
   # "ba"   -> @sb + @sa             | Esperado: false (Ordem invertida)
   # =================================================================
   
-  # Cadeia ativa para a avaliação do professor (aabb)
+  # Cadeia ativa para a avaliação (aabb)
    (@sa * 2) + (@sb * 2)
 end

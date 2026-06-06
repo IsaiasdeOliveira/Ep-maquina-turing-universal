@@ -1,6 +1,12 @@
-# main.rb
 require_relative 'maquina-turing-universal'
-require_relative 'mt-linguagem-sensivel-ao-contexto' # <-- Mude para o nome do arquivo novo!
+# =================================================================
+# INSTRUÇÕES DE TESTE:
+# Descomente apenas a linha da linguagem que deseja testar no motor:
+# =================================================================
+
+# require_relative 'mt-linguagem-regular'
+# require_relative 'mt-linguagem-livre-contexto'
+require_relative 'mt-linguagem-sensivel-ao-contexto' 
 
 entrada = linker + "#" + codificacao_cadeia
 mt = MTU.new

@@ -1,5 +1,3 @@
-# maquina-turing-universal.rb
-
 class MTU
   attr_accessor :fita, :cursor
   attr_reader :estado

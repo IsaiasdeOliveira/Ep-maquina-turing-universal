@@ -1,5 +1,3 @@
-# mt-linguagem-regular.rb
-
 # Estados internos de não-aceitação
 @q0 = "fa"
 @q1 = "faa"
@@ -37,6 +35,6 @@ def codificacao_cadeia
   # Letras estranhas (ex: 'c' ou 'd') resultam em false por falta de regra.
   # =================================================================
   
-  # Cadeia ativa para a avaliação do professor (Deixe uma que dê true)
+  # Cadeia ativa para a avaliação (aabb)
   (@sa * 2) + (@sb * 2)
 end
